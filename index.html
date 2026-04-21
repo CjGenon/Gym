@@ -1,0 +1,222 @@
+
+<style>
+  .plan-wrap { padding: 1rem 0; font-family: var(--font-sans); }
+  .day-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.25rem; }
+  .day-tab { padding: 6px 14px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: var(--color-background-secondary); color: var(--color-text-secondary); font-size: 13px; cursor: pointer; transition: all 0.15s; font-weight: 400; }
+  .day-tab.active { background: #185FA5; color: #E6F1FB; border-color: #185FA5; font-weight: 500; }
+  .day-tab.rest-tab.active { background: #3B6D11; color: #EAF3DE; border-color: #3B6D11; }
+  .day-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.25rem; }
+  .day-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; }
+  .day-badge { padding: 4px 12px; border-radius: var(--border-radius-md); font-size: 12px; font-weight: 500; }
+  .badge-push { background: #E6F1FB; color: #0C447C; }
+  .badge-pull { background: #FAEEDA; color: #633806; }
+  .badge-legs { background: #FCEBEB; color: #791F1F; }
+  .badge-upper { background: #EEEDFE; color: #3C3489; }
+  .badge-full { background: #EAF3DE; color: #27500A; }
+  .badge-rest { background: #F1EFE8; color: #444441; }
+  .day-title { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
+  .day-sub { font-size: 13px; color: var(--color-text-secondary); }
+  .exercise-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .exercise-table th { text-align: left; padding: 8px 10px; color: var(--color-text-secondary); font-weight: 500; font-size: 12px; border-bottom: 0.5px solid var(--color-border-tertiary); text-transform: uppercase; letter-spacing: 0.04em; }
+  .exercise-table td { padding: 10px 10px; border-bottom: 0.5px solid var(--color-border-tertiary); color: var(--color-text-primary); vertical-align: middle; }
+  .exercise-table tr:last-child td { border-bottom: none; }
+  .exercise-table tr:hover td { background: var(--color-background-secondary); }
+  .equipment-tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 99px; background: var(--color-background-secondary); color: var(--color-text-secondary); border: 0.5px solid var(--color-border-tertiary); }
+  .tip-box { margin-top: 1rem; padding: 10px 14px; background: var(--color-background-secondary); border-left: 2px solid #185FA5; border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0; font-size: 13px; color: var(--color-text-secondary); }
+  .rest-body { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem 0; gap: 8px; }
+  .rest-icon { font-size: 36px; }
+  .rest-msg { font-size: 16px; font-weight: 500; color: var(--color-text-primary); }
+  .rest-sub { font-size: 13px; color: var(--color-text-secondary); text-align: center; }
+  .muscle-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .muscle-chip { font-size: 11px; padding: 3px 10px; border-radius: 99px; background: var(--color-background-info); color: var(--color-text-info); }
+</style>
+<div class="plan-wrap">
+  <h2 style="sr-only; font-size:18px; font-weight:500; color:var(--color-text-primary); margin:0 0 4px;">1-week gym workout plan</h2>
+  <p style="font-size:13px; color:var(--color-text-secondary); margin:0 0 1.25rem;">Click a day to view exercises &mdash; 3 sets per exercise unless noted</p>
+  <div class="day-tabs">
+    <button class="day-tab active" onclick="showDay(0)">Mon</button>
+    <button class="day-tab" onclick="showDay(1)">Tue</button>
+    <button class="day-tab" onclick="showDay(2)">Wed</button>
+    <button class="day-tab" onclick="showDay(3)">Thu</button>
+    <button class="day-tab" onclick="showDay(4)">Fri</button>
+    <button class="day-tab" onclick="showDay(5)">Sat</button>
+    <button class="day-tab rest-tab" onclick="showDay(6)">Sun</button>
+  </div>
+  <div id="day-content" class="day-card"></div>
+</div>
+
+<script>
+const days = [
+  {
+    label: "Monday",
+    focus: "Chest & Triceps",
+    badge: "badge-push",
+    badgeText: "Push",
+    muscles: ["Chest", "Triceps", "Front Delts"],
+    tip: "Keep elbows at 45° on chest press to protect your shoulders.",
+    exercises: [
+      { name: "Chest Press Machine", sets: "3", reps: "10–12", equip: "Machine", note: "Control the negative" },
+      { name: "Incline Dumbbell Press", sets: "3", reps: "10–12", equip: "Dumbbells", note: "30–45° incline" },
+      { name: "Cable Chest Fly", sets: "3", reps: "12–15", equip: "Machine", note: "Squeeze at peak" },
+      { name: "Tricep Pushdown", sets: "3", reps: "12–15", equip: "Machine", note: "Cable rope or bar" },
+      { name: "Overhead Tricep Extension", sets: "3", reps: "12", equip: "Dumbbells", note: "One or two dumbbells" },
+    ]
+  },
+  {
+    label: "Tuesday",
+    focus: "Back & Biceps",
+    badge: "badge-pull",
+    badgeText: "Pull",
+    muscles: ["Lats", "Rhomboids", "Biceps", "Rear Delts"],
+    tip: "On rows, think 'elbow to pocket' — not 'pull the weight'.",
+    exercises: [
+      { name: "Lat Pulldown Machine", sets: "3", reps: "10–12", equip: "Machine", note: "Wide grip, lean back slightly" },
+      { name: "Seated Cable Row", sets: "3", reps: "10–12", equip: "Machine", note: "Keep chest up" },
+      { name: "Dumbbell Single-arm Row", sets: "3", reps: "10–12", equip: "Dumbbells", note: "Flat back, full stretch" },
+      { name: "Dumbbell Bicep Curl", sets: "3", reps: "12", equip: "Dumbbells", note: "Squeeze at top" },
+      { name: "Hammer Curl", sets: "3", reps: "12", equip: "Dumbbells", note: "Neutral grip, slow down" },
+    ]
+  },
+  {
+    label: "Wednesday",
+    focus: "Legs",
+    badge: "badge-legs",
+    badgeText: "Legs",
+    muscles: ["Quads", "Hamstrings", "Glutes", "Calves"],
+    tip: "Drive through your heels on leg press and keep knees tracking over toes.",
+    exercises: [
+      { name: "Leg Press Machine", sets: "4", reps: "10–12", equip: "Machine", note: "Feet shoulder-width" },
+      { name: "Leg Extension Machine", sets: "3", reps: "12–15", equip: "Machine", note: "Pause at top" },
+      { name: "Leg Curl Machine", sets: "3", reps: "12–15", equip: "Machine", note: "Lying or seated" },
+      { name: "Dumbbell Romanian Deadlift", sets: "3", reps: "10–12", equip: "Dumbbells", note: "Feel the hamstring stretch" },
+      { name: "Calf Raise Machine", sets: "3", reps: "15–20", equip: "Machine", note: "Full range of motion" },
+    ]
+  },
+  {
+    label: "Thursday",
+    focus: "Shoulders & Core",
+    badge: "badge-upper",
+    badgeText: "Shoulders",
+    muscles: ["All 3 Delt Heads", "Traps", "Core"],
+    tip: "Go lighter on lateral raises — most people go too heavy and use momentum.",
+    exercises: [
+      { name: "Shoulder Press Machine", sets: "3", reps: "10–12", equip: "Machine", note: "Don't lock elbows at top" },
+      { name: "Dumbbell Lateral Raise", sets: "3", reps: "12–15", equip: "Dumbbells", note: "Slight bend in elbows" },
+      { name: "Cable Face Pull", sets: "3", reps: "15", equip: "Machine", note: "Great for rear delts & health" },
+      { name: "Dumbbell Front Raise", sets: "3", reps: "12", equip: "Dumbbells", note: "Alternate arms" },
+      { name: "Cable Crunch", sets: "3", reps: "15–20", equip: "Machine", note: "Round through the abs" },
+    ]
+  },
+  {
+    label: "Friday",
+    focus: "Full Body (Compound)",
+    badge: "badge-full",
+    badgeText: "Full Body",
+    muscles: ["Chest", "Back", "Legs", "Arms", "Shoulders"],
+    tip: "This session ties the week together — focus on perfect form over heavy weight.",
+    exercises: [
+      { name: "Chest Press Machine", sets: "3", reps: "10", equip: "Machine", note: "Heavier than Monday" },
+      { name: "Lat Pulldown Machine", sets: "3", reps: "10", equip: "Machine", note: "Close or neutral grip" },
+      { name: "Leg Press Machine", sets: "3", reps: "10", equip: "Machine", note: "Heavy and controlled" },
+      { name: "Dumbbell Shoulder Press", sets: "3", reps: "10", equip: "Dumbbells", note: "Seated or standing" },
+      { name: "Dumbbell Curl + Press Combo", sets: "3", reps: "10", equip: "Dumbbells", note: "Curl into a shoulder press" },
+    ]
+  },
+  {
+    label: "Saturday",
+    focus: "Arms & Cardio",
+    badge: "badge-pull",
+    badgeText: "Arms",
+    muscles: ["Biceps", "Triceps", "Forearms"],
+    tip: "Finish with 15–20 min of light cardio (bike or treadmill) for recovery.",
+    exercises: [
+      { name: "Preacher Curl Machine", sets: "3", reps: "12", equip: "Machine", note: "Full extension at bottom" },
+      { name: "Cable Bicep Curl", sets: "3", reps: "12–15", equip: "Machine", note: "Supinate wrist at top" },
+      { name: "Tricep Dip Machine", sets: "3", reps: "12", equip: "Machine", note: "Don't flare elbows" },
+      { name: "Skull Crusher (Dumbbells)", sets: "3", reps: "12", equip: "Dumbbells", note: "Elbows stay still" },
+      { name: "Reverse Curl", sets: "2", reps: "15", equip: "Dumbbells", note: "Trains forearms & brachialis" },
+    ]
+  },
+  {
+    label: "Sunday",
+    focus: "Rest Day",
+    badge: "badge-rest",
+    badgeText: "Rest",
+    muscles: [],
+    tip: "",
+    exercises: [],
+    isRest: true
+  },
+];
+
+let current = 0;
+
+function showDay(idx) {
+  current = idx;
+  const tabs = document.querySelectorAll('.day-tab');
+  tabs.forEach((t, i) => {
+    t.classList.toggle('active', i === idx);
+  });
+  render();
+}
+
+function render() {
+  const d = days[current];
+  const el = document.getElementById('day-content');
+
+  if (d.isRest) {
+    el.innerHTML = `
+      <div class="day-header">
+        <div>
+          <div class="day-title">${d.label}</div>
+          <div class="day-sub">You earned this.</div>
+        </div>
+        <span class="day-badge ${d.badge}" style="margin-left:auto;">${d.badgeText}</span>
+      </div>
+      <div class="rest-body">
+        <div style="font-size:48px;">💤</div>
+        <div class="rest-msg">Rest & Recover</div>
+        <div class="rest-sub">Muscle is built during recovery, not just in the gym.<br>Sleep well, eat enough protein, and hydrate.</div>
+      </div>
+    `;
+    return;
+  }
+
+  const rows = d.exercises.map(ex => `
+    <tr>
+      <td style="font-weight:500;">${ex.name}</td>
+      <td style="text-align:center;">${ex.sets}</td>
+      <td style="text-align:center;">${ex.reps}</td>
+      <td><span class="equipment-tag">${ex.equip}</span></td>
+      <td style="color:var(--color-text-secondary); font-size:13px;">${ex.note}</td>
+    </tr>
+  `).join('');
+
+  const chips = d.muscles.map(m => `<span class="muscle-chip">${m}</span>`).join('');
+
+  el.innerHTML = `
+    <div class="day-header">
+      <div>
+        <div class="day-title">${d.label} &mdash; ${d.focus}</div>
+        <div class="muscle-chips">${chips}</div>
+      </div>
+      <span class="day-badge ${d.badge}" style="margin-left:auto;">${d.badgeText}</span>
+    </div>
+    <table class="exercise-table">
+      <thead>
+        <tr>
+          <th>Exercise</th>
+          <th style="text-align:center;">Sets</th>
+          <th style="text-align:center;">Reps</th>
+          <th>Equipment</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="tip-box">Tip: ${d.tip}</div>
+  `;
+}
+
+render();
+</script>
