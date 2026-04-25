@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>My Weekly Workout</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0d0f14;
+    --surface:  #161a22;
+    --card:     #1c2030;
+    --border:   rgba(255,255,255,0.07);
+    --border2:  rgba(255,255,255,0.13);
+    --accent:   #e8f54e;
+    --accent2:  #ff5c35;
+    --text:     #f0f2f7;
+    --muted:    #6e7590;
+    --muted2:   #9aa0b8;
+    --radius:   14px;
+    --radius-sm:8px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ── noise overlay ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.025;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; padding: 0 20px 80px; }
+
+  /* ── hero ── */
+  .hero {
+    padding: 56px 0 40px;
+    border-bottom: 0.5px solid var(--border2);
+    margin-bottom: 40px;
+  }
+  .hero-label {
+    display: inline-block;
+    background: var(--accent);
+    color: #0d0f14;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 10vw, 86px);
+    letter-spacing: .02em;
+    line-height: .95;
+    color: var(--text);
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero-sub {
+    margin-top: 16px;
+    color: var(--muted2);
+    font-size: 14px;
+    font-weight: 300;
+    max-width: 420px;
+  }
+
+  /* ── summary strip ── */
+  .stats {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+  }
+  .stat {
+    flex: 1;
+    min-width: 100px;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 34px;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .stat-lbl {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-top: 4px;
+  }
+
+  /* ── day tabs ── */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+  .tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 10px 16px;
+    border-radius: var(--radius-sm);
+    border: 0.5px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all .18s;
+    min-width: 72px;
+  }
+  .tab:hover { border-color: var(--border2); color: var(--text); }
+  .tab .t-day { font-weight: 600; font-size: 14px; }
+  .tab .t-label { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; }
+
+  .tab.active {
+    background: var(--accent);
+    color: #0d0f14;
+    border-color: var(--accent);
+  }
+  .tab.active .t-label { color: rgba(0,0,0,0.55); }
+
+  .tab.light.active {
+    background: #ff5c35;
+    border-color: #ff5c35;
+    color: #fff;
+  }
+  .tab.light.active .t-label { color: rgba(255,255,255,0.6); }
+
+  .tab.rest.active {
+    background: #2a3a2a;
+    border-color: #4caf50;
+    color: #8bc98e;
+  }
+
+  /* ── day panel ── */
+  .panel { animation: fadeUp .22s ease both; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 10px;
+  }
+  .panel-badge {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: .1em;
+    padding: 5px 14px;
+    border-radius: 4px;
+  }
+  .panel-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: .03em;
+    line-height: 1;
+  }
+
+  .panel-tip {
+    background: var(--surface);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--muted2);
+    margin-bottom: 24px;
+    font-weight: 300;
+  }
+  .light-banner {
+    background: rgba(255,92,53,0.1);
+    border-left: 3px solid #ff5c35;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 10px 16px;
+    font-size: 13px;
+    color: #ff8a6a;
+    margin-bottom: 16px;
+    font-weight: 400;
+  }
+
+  /* ── exercise cards ── */
+  .ex-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .ex-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    background: var(--card);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    transition: border-color .15s;
+  }
+  .ex-card:hover { border-color: var(--border2); }
+
+  .ex-left { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
+
+  .ex-num {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    flex-shrink: 0;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 15px;
+    letter-spacing: .04em;
+  }
+
+  .ex-info { min-width: 0; }
+  .ex-name { font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ex-sets { font-size: 12px; color: var(--muted); margin-top: 2px; font-weight: 300; }
+
+  .yt-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px;
+    background: #ff0000;
+    color: #fff;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background .15s, transform .1s;
+    letter-spacing: .02em;
+  }
+  .yt-btn:hover { background: #cc0000; transform: scale(1.03); }
+  .yt-btn svg { width: 14px; height: 14px; fill: #fff; flex-shrink: 0; }
+
+  /* ── rest screen ── */
+  .rest-screen {
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .rest-icon {
+    font-size: 60px;
+    margin-bottom: 20px;
+    display: block;
+  }
+  .rest-screen h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    letter-spacing: .04em;
+    margin-bottom: 12px;
+    color: #8bc98e;
+  }
+  .rest-screen p {
+    color: var(--muted2);
+    font-size: 14px;
+    font-weight: 300;
+    max-width: 340px;
+    margin: 0 auto;
+  }
+
+  /* ── footer ── */
+  .footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 0.5px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+    font-weight: 300;
+  }
+  .footer strong { color: var(--accent); font-weight: 500; }
+
+  /* ── responsive ── */
+  @media(max-width: 500px) {
+    .tabs { gap: 6px; }
+    .tab { min-width: 60px; padding: 8px 10px; }
+    .tab .t-day { font-size: 12px; }
+    .ex-name { font-size: 13px; }
+    .yt-btn { padding: 7px 10px; font-size: 11px; }
+    .yt-btn .btn-text { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="hero-label">6-Day Split</div>
+    <h1>Weekly<br/><span>Workout</span></h1>
+    <p class="hero-sub">Chest · Back · Arms · Cardio · Legs · Shoulders — Sunday rest only.</p>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-val">5</div><div class="stat-lbl">Lifting days</div></div>
+    <div class="stat"><div class="stat-val">1</div><div class="stat-lbl">Cardio day</div></div>
+    <div class="stat"><div class="stat-val">1</div><div class="stat-lbl">Rest day</div></div>
+    <div class="stat"><div class="stat-val">~60</div><div class="stat-lbl">Min / session</div></div>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+  <div id="panel"></div>
+
+  <div class="footer">
+    Built for <strong>50kg · 5'4"</strong> — eat 100–120g protein daily &amp; stay consistent. 💪
+  </div>
+
+</div>
+
+<script>
+const YT = url => `<a href="${url}" target="_blank" rel="noopener" class="yt-btn"><svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-2.75 12.64 12.64 0 0 0-3.45-1.45 12.64 12.64 0 0 0-3.45 1.45A4.83 4.83 0 0 1 5.15 6.69 48.25 48.25 0 0 0 4 12a48.25 48.25 0 0 0 1.15 5.31 4.83 4.83 0 0 1 3.77 2.75 12.64 12.64 0 0 0 3.08.44 12.64 12.64 0 0 0 3.08-.44 4.83 4.83 0 0 1 3.77-2.75A48.25 48.25 0 0 0 20 12a48.25 48.25 0 0 0-1.41-5.31zM9.75 15.02V8.98L15.5 12z"/></svg><span class="btn-text">Watch</span></a>`;
+
+const numAccents = [
+  {bg:'rgba(232,245,78,0.12)',color:'#e8f54e'},
+  {bg:'rgba(29,158,117,0.12)',color:'#1d9e75'},
+  {bg:'rgba(255,92,53,0.12)', color:'#ff5c35'},
+  {bg:'rgba(55,138,221,0.12)',color:'#378add'},
+  {bg:'rgba(212,83,126,0.12)',color:'#d4537e'},
+  {bg:'rgba(186,117,23,0.12)',color:'#ba7517'},
+];
+
+const days = [
+  {
+    id:'mon', name:'Mon', full:'Monday', label:'Chest',
+    badgeBg:'rgba(232,245,78,0.15)', badgeColor:'#e8f54e',
+    tip:'Starting with chest on Monday is optimal — you\'re freshest at the start of the week. Your triceps get a full 6 days before being the primary target again.',
+    exercises:[
+      {name:'Barbell Bench Press',      sets:'4 sets × 8–10 reps',  url:'https://www.youtube.com/results?search_query=barbell+bench+press+proper+form+tutorial'},
+      {name:'Incline Dumbbell Press',   sets:'3 sets × 10–12 reps', url:'https://www.youtube.com/results?search_query=incline+dumbbell+press+form+tutorial'},
+      {name:'Cable Chest Fly',          sets:'3 sets × 12–15 reps', url:'https://www.youtube.com/results?search_query=cable+chest+fly+proper+form+tutorial'},
+      {name:'Chest Dips',               sets:'3 sets × 10–12 reps', url:'https://www.youtube.com/results?search_query=chest+dips+proper+form+tutorial'},
+      {name:'Decline Bench Press',      sets:'3 sets × 10–12 reps', url:'https://www.youtube.com/results?search_query=decline+bench+press+form+tutorial'},
+    ]
+  },
+  {
+    id:'tue', name:'Tue', full:'Tuesday', label:'Back',
+    badgeBg:'rgba(29,158,117,0.15)', badgeColor:'#1d9e75',
+    tip:'Back right after chest is the perfect push/pull pairing — these muscles barely overlap. Lead with deadlifts while your CNS is still fresh.',
+    exercises:[
+      {name:'Deadlift',                  sets:'4 sets × 5–6 reps',   url:'https://www.youtube.com/results?search_query=deadlift+proper+form+beginners+tutorial'},
+      {name:'Pull-ups / Lat Pulldown',   sets:'4 sets × 8–10 reps',  url:'https://www.youtube.com/results?search_query=lat+pulldown+proper+form+tutorial'},
+      {name:'Bent-over Barbell Row',     sets:'3 sets × 8–10 reps',  url:'https://www.youtube.com/results?search_query=bent+over+barbell+row+proper+form+tutorial'},
+      {name:'Seated Cable Row',          sets:'3 sets × 12 reps',    url:'https://www.youtube.com/results?search_query=seated+cable+row+form+tutorial'},
+      {name:'Face Pulls',                sets:'3 sets × 15–20 reps', url:'https://www.youtube.com/results?search_query=face+pulls+cable+form+tutorial'},
+    ]
+  },
+  {
+    id:'wed', name:'Wed', full:'Wednesday', label:'Arms',
+    badgeBg:'rgba(255,92,53,0.15)', badgeColor:'#ff5c35',
+    tip:'Mid-week arms is ideal. Chest and back used your biceps and triceps as helpers — now you hit them directly when they\'re warmed up but not pre-exhausted.',
+    exercises:[
+      {name:'Barbell Curl',               sets:'4 sets × 10–12 reps', url:'https://www.youtube.com/results?search_query=barbell+curl+proper+form+tutorial'},
+      {name:'Hammer Curl',                sets:'3 sets × 12 reps',    url:'https://www.youtube.com/results?search_query=hammer+curl+form+tutorial'},
+      {name:'Incline Dumbbell Curl',      sets:'3 sets × 12 reps',    url:'https://www.youtube.com/results?search_query=incline+dumbbell+curl+form+tutorial'},
+      {name:'Tricep Cable Pushdown',      sets:'4 sets × 12–15 reps', url:'https://www.youtube.com/results?search_query=tricep+cable+pushdown+form+tutorial'},
+      {name:'Skull Crushers (EZ Bar)',    sets:'3 sets × 10–12 reps', url:'https://www.youtube.com/results?search_query=skull+crushers+ez+bar+proper+form+tutorial'},
+      {name:'Overhead Tricep Extension',  sets:'3 sets × 12 reps',    url:'https://www.youtube.com/results?search_query=overhead+tricep+extension+dumbbell+form+tutorial'},
+    ]
+  },
+  {
+    id:'thu', name:'Thu', full:'Thursday', label:'Cardio',
+    isLight: true,
+    badgeBg:'rgba(255,92,53,0.15)', badgeColor:'#ff5c35',
+    tip:'This is the one intentional light day. Sitting between 3 hard lifting days and legs on Friday, cardio here keeps blood flowing and muscles recovering without adding fatigue before your heaviest session of the week.',
+    cardio:[
+      {name:'Warm-up walk / light jog',       duration:'5 min',             url:'https://www.youtube.com/results?search_query=walking+warmup+cardio+routine'},
+      {name:'Moderate jog or stationary bike', duration:'20–25 min',         url:'https://www.youtube.com/results?search_query=moderate+jog+cardio+workout+beginners'},
+      {name:'Jump rope',                        duration:'3 rounds × 2 min',  url:'https://www.youtube.com/results?search_query=jump+rope+cardio+workout+tutorial'},
+      {name:'Full body stretch / cool down',    duration:'10 min',            url:'https://www.youtube.com/results?search_query=full+body+stretching+cool+down+routine'},
+    ]
+  },
+  {
+    id:'fri', name:'Fri', full:'Friday', label:'Legs',
+    badgeBg:'rgba(212,83,126,0.15)', badgeColor:'#d4537e',
+    tip:'Thursday cardio keeps your legs fresh for today. Legs is your most demanding session — squats and deadlifts release the most growth hormone of any lift, which helps your entire body grow.',
+    exercises:[
+      {name:'Barbell Back Squat',   sets:'4 sets × 6–8 reps',   url:'https://www.youtube.com/results?search_query=barbell+back+squat+proper+form+tutorial'},
+      {name:'Romanian Deadlift',    sets:'3 sets × 10–12 reps', url:'https://www.youtube.com/results?search_query=romanian+deadlift+form+tutorial'},
+      {name:'Leg Press',            sets:'3 sets × 12–15 reps', url:'https://www.youtube.com/results?search_query=leg+press+machine+proper+form+tutorial'},
+      {name:'Lying Leg Curl',       sets:'3 sets × 12–15 reps', url:'https://www.youtube.com/results?search_query=lying+leg+curl+machine+form+tutorial'},
+      {name:'Leg Extension',        sets:'3 sets × 15 reps',    url:'https://www.youtube.com/results?search_query=leg+extension+machine+proper+form+tutorial'},
+      {name:'Standing Calf Raise',  sets:'4 sets × 15–20 reps', url:'https://www.youtube.com/results?search_query=standing+calf+raise+form+tutorial'},
+    ]
+  },
+  {
+    id:'sat', name:'Sat', full:'Saturday', label:'Shoulders',
+    badgeBg:'rgba(55,138,221,0.15)', badgeColor:'#378add',
+    tip:'Shoulders to close the lifting week is perfect — they weren\'t the primary target any day this week, so they\'re fully recovered and ready to be pushed hard. Finish with abs as a strong cap.',
+    exercises:[
+      {name:'Overhead Barbell Press',    sets:'4 sets × 8–10 reps',  url:'https://www.youtube.com/results?search_query=overhead+barbell+press+proper+form+tutorial'},
+      {name:'Dumbbell Lateral Raise',    sets:'4 sets × 12–15 reps', url:'https://www.youtube.com/results?search_query=lateral+raise+proper+form+technique+tutorial'},
+      {name:'Rear Delt Dumbbell Fly',    sets:'3 sets × 15 reps',    url:'https://www.youtube.com/results?search_query=rear+delt+fly+dumbbell+form+tutorial'},
+      {name:'Arnold Press',              sets:'3 sets × 10–12 reps', url:'https://www.youtube.com/results?search_query=arnold+press+form+tutorial'},
+      {name:'Cable Crunch',              sets:'3 sets × 15–20 reps', url:'https://www.youtube.com/results?search_query=cable+crunch+abs+form+tutorial'},
+      {name:'Plank',                     sets:'3 sets × 45–60 sec',  url:'https://www.youtube.com/results?search_query=plank+proper+form+tutorial'},
+    ]
+  },
+  {
+    id:'sun', name:'Sun', full:'Sunday', label:'Rest',
+    isRest: true,
+  },
+];
+
+let active = 0;
+
+function renderTabs(){
+  document.getElementById('tabs').innerHTML = days.map((d,i) => `
+    <button class="tab${i===active?' active':''}${d.isLight?' light':''}${d.isRest?' rest':''}" onclick="go(${i})">
+      <span class="t-day">${d.name}</span>
+      <span class="t-label">${d.label}</span>
+    </button>`).join('');
+}
+
+function renderPanel(){
+  const d = days[active];
+  const el = document.getElementById('panel');
+
+  if(d.isRest){
+    el.innerHTML = `<div class="panel rest-screen">
+      <span class="rest-icon">💤</span>
+      <h2>Rest Day</h2>
+      <p>You earned it. 6 days of hard work means your body needs this to actually grow. Sleep well, eat your protein, stay hydrated — come back Monday ready to go harder.</p>
+    </div>`;
+    return;
+  }
+
+  const exRows = (d.isLight ? d.cardio : d.exercises).map((ex, i) => {
+    const c = numAccents[i % numAccents.length];
+    const detail = d.isLight ? ex.duration : ex.sets;
+    return `<div class="ex-card">
+      <div class="ex-left">
+        <div class="ex-num" style="background:${c.bg};color:${c.color}">${i+1}</div>
+        <div class="ex-info">
+          <div class="ex-name">${ex.name}</div>
+          <div class="ex-sets">${detail}</div>
+        </div>
+      </div>
+      ${YT(ex.url)}
+    </div>`;
+  }).join('');
+
+  const lightBanner = d.isLight
+    ? `<div class="light-banner">⚡ Light day — cardio only. No heavy lifting. Keeps your legs fresh for tomorrow's leg session.</div>`
+    : '';
+
+  el.innerHTML = `<div class="panel">
+    <div class="panel-header">
+      <span class="panel-badge" style="background:${d.badgeBg};color:${d.badgeColor}">${d.label.toUpperCase()}</span>
+      <span class="panel-title">${d.full}</span>
+    </div>
+    ${lightBanner}
+    <div class="panel-tip">${d.tip}</div>
+    <div class="ex-list">${exRows}</div>
+  </div>`;
+}
+
+function go(i){ active = i; renderTabs(); renderPanel(); }
+renderTabs();
+renderPanel();
+</script>
+</body>
+</html>
